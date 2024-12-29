@@ -1,33 +1,58 @@
-# Compiled class file
-*.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
-
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
-
-# Kotlin Gradle plugin data, see https://kotlinlang.org/docs/whatsnew20.html#new-directory-for-kotlin-data-in-gradle-projects
-.kotlin/
-
-# Ignore build artifacts
-build/
-.cxx/
-.idea/
+# Gradle files and directories
 .gradle/
+build/
+**/build/
+!gradle-wrapper.jar
+.gradle/*
+
+# Local configuration files
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries/
+/.idea/misc.xml
+/.idea/modules.xml
+.idea/codeStyles/
+.idea/vcs.xml
+.idea/assetWizardSettings.xml
+.idea/.name
+
+# Android-specific files
+*.iml
+*.hprof
+*.log
+.DS_Store
+*.orig
+
+# Ignore unnecessary Git files
+.idea/caches
+.idea/modules.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/codeStyles/Project.xml
+*.apk
+*.ap_
+*.cxx/
+**/*.apk
+**/*.ap_
+
+# Keys and sensitive files
+*.keystore
+*.jks
+
+# Test results
+*.test/
+**/generated/
+*.retry
+
+# OS-specific files
+*.swp
+*~.*
+*.tmp
+*.bak
+*.swo
+*.directory
+Thumbs.db
+ehthumbs.db
+
+# JetBrains IDE files
+.idea/
+out/

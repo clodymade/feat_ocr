@@ -1,0 +1,34 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="300dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- 좌상단 꺾쇠 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M10,0 L0,0 L0,10" />
+
+    <!-- 우상단 꺽쇠 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M90,0 L100,0 L100,10" />
+
+    <!-- 좌하단 꺽쇠 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M0,90 L0,100 L10,100" />
+
+    <!-- 우하단 꺽쇠 -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M90,100 L100,100 L100,90" />
+</vector>

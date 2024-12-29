@@ -1,0 +1,20 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 흰색 아웃라인이 있는 X 모양 닫기 버튼 -->
+    <path
+        android:fillColor="#000000"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="4"
+        android:pathData="M4,4 L20,20 M4,20 L20,4" />
+
+    <!-- 외곽선 (검정) 추가 -->
+    <path
+        android:strokeWidth="2"
+        android:strokeColor="#000000"
+        android:pathData="M5,19 L19,5 M5,5 L19,19"/>
+
+</vector>

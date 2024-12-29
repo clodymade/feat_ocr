@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- 햇빛이 뻗어나가는 선 아웃라인 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12 2v2M18.36 5.64l-1.41 1.41M22 12h-2M18.36 18.36l-1.41-1.41M12 22v-2M5.64 18.36l1.41-1.41M2 12h2M5.64 5.64l1.41 1.41"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+
+    <!-- 중앙의 원을 path로 그리기 아웃라인 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12,8 a4,4 0 1,0 0.0001,0" />
+
+    <!-- 햇빛이 뻗어나가는 선 -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M12 2v2M18.36 5.64l-1.41 1.41M22 12h-2M18.36 18.36l-1.41-1.41M12 22v-2M5.64 18.36l1.41-1.41M2 12h2M5.64 5.64l1.41 1.41"
+        android:strokeColor="#FFEB3B"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"/>
+
+    <!-- 중앙의 원을 path로 그리기 -->
+    <path
+        android:fillColor="#FFEB3B"
+        android:pathData="M12,9 a3,3 0 1,0 0.0001,0" />
+
+</vector>
