@@ -222,7 +222,7 @@ object HiCardScanner {
             var preprocessedImage = croppedImage
             if (count % 3u == 0u) {
                 preprocessedImage = HiImageProcessor.processCardImageForEmbossedText(croppedImage)
-                preProcessedState.value = preprocessedImage // Update the debug state
+                //preProcessedState.value = preprocessedImage // Update the debug state
             }
 
             // Create an InputImage for ML Kit from the preprocessed bitmap
