@@ -20,7 +20,10 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.ImageFormat
+import android.graphics.Matrix
+import android.graphics.Paint
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Log
@@ -47,6 +50,7 @@ import com.mwkg.ocr.util.HiOcrToolkit.hasPermissions
 import com.mwkg.ocr.util.HiOcrToolkit.toMapOrList
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import kotlin.math.min
 
 @SuppressLint("StaticFieldLeak")
 object HiCardScanner {
@@ -202,12 +206,12 @@ object HiCardScanner {
             val rgbBitmap = imageProxy.toBitmap() // Default size or configured resolution
             // Rotate the image to match the device orientation
             val rotatedBitmap =
-                HiOcrPreProcessImage.rotateBitmap(rgbBitmap, imageProxy.imageInfo.rotationDegrees)
+                rotateBitmap(rgbBitmap, imageProxy.imageInfo.rotationDegrees)
             // Crop the bitmap to the specified ROI (Region of Interest)
             val croppedImage =
-                HiOcrPreProcessImage.cropToCameraCoordinates(rotatedBitmap, scanBox, screenSize)
+                cropToCameraCoordinates(rotatedBitmap, scanBox, screenSize)
             // Resize the cropped image for consistent processing
-            val resizedImage = HiOcrPreProcessImage.resizeImageToHeight(croppedImage, 1000.0f)
+            val resizedImage = resizeImageToHeight(croppedImage, 1000.0f)
             // Store the latest scanned image for reference
             lastScannedImage = resizedImage
 
@@ -217,7 +221,7 @@ object HiCardScanner {
             // Optionally preprocess every third image for better OCR accuracy
             var preprocessedImage = croppedImage
             if (count % 3u == 0u) {
-                preprocessedImage = HiOcrPreProcessImage.preprocessForTextRecognition(croppedImage)
+                preprocessedImage = HiImageProcessor.processCardImageForEmbossedText(croppedImage)
                 preProcessedState.value = preprocessedImage // Update the debug state
             }
 
@@ -365,5 +369,79 @@ object HiCardScanner {
 
         // Select the maximum resolution available or default to 1280x720
         return outputSizes?.maxByOrNull { it.width * it.height } ?: Size(1280, 720)
+    }
+
+
+    /**
+     * Crops the provided Bitmap to match the region of interest (ROI).
+     *
+     * @param bitmap The source Bitmap to crop.
+     * @param scanBox The rectangular region defining the area of interest.
+     * @param screenSize The size of the screen to calculate scaling.
+     * @return A cropped Bitmap.
+     */
+    fun cropToCameraCoordinates(
+        bitmap: Bitmap,
+        scanBox: androidx.compose.ui.geometry.Rect,
+        screenSize: androidx.compose.ui.geometry.Size
+    ): Bitmap {
+        val cameraWidth = bitmap.width
+        val cameraHeight = bitmap.height
+
+        val widthScale = cameraWidth / screenSize.width
+        val heightScale = cameraHeight / screenSize.height
+        val minScale = min(widthScale, heightScale)
+
+        val cropHeight = scanBox.height * minScale
+        val cropWidth = cropHeight * 1.586 // Aspect ratio
+        val cropOriginX = (cameraWidth - cropWidth) / 2
+        val cropOriginY = (cameraHeight - (scanBox.top + scanBox.height) * minScale)
+
+        return Bitmap.createBitmap(
+            bitmap,
+            cropOriginX.toInt(),
+            cropOriginY.toInt(),
+            cropWidth.toInt(),
+            cropHeight.toInt()
+        )
+    }
+
+    /**
+     * Rotates a Bitmap by a specified degree.
+     *
+     * @param bitmap The Bitmap to rotate.
+     * @param rotationDegrees The degree of rotation (e.g., 90, 180, 270).
+     * @return A rotated Bitmap.
+     */
+    fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
+        val matrix = Matrix().apply {
+            postRotate(rotationDegrees.toFloat())
+        }
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+
+    /**
+     * Resizes a Bitmap to a specified target height while maintaining the aspect ratio.
+     *
+     * @param bitmap The Bitmap to resize.
+     * @param targetHeight The desired height of the resized Bitmap.
+     * @return A resized Bitmap.
+     */
+    fun resizeImageToHeight(bitmap: Bitmap, targetHeight: Float): Bitmap {
+        val scale = targetHeight / bitmap.height
+        val targetWidth = bitmap.width * scale
+
+        val resizedBitmap = Bitmap.createBitmap(
+            targetWidth.toInt(),
+            targetHeight.toInt(),
+            bitmap.config ?: Bitmap.Config.ARGB_8888
+        )
+
+        val canvas = Canvas(resizedBitmap)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        canvas.scale(scale, scale)
+        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+
+        return resizedBitmap
     }
 }

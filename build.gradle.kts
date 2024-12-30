@@ -83,6 +83,9 @@ dependencies {
     // ML Kit, CameraX
     implementation(libs.androidx.camera.mlkit.vision)
     implementation(libs.text.recognition) // ML Kit Text Recognition
+
+    // OpenCV
+    implementation(libs.opencv)
 }
 
 // Maven publishing configuration for JitPack
