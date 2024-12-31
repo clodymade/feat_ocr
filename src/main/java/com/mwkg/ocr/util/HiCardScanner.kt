@@ -54,6 +54,7 @@ import kotlin.math.min
 
 @SuppressLint("StaticFieldLeak")
 object HiCardScanner {
+    var licenseKey: String = ""
     private var isScanning: Boolean = false
     private var callback: ((HiOcrResult) -> Unit)? = null
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -82,7 +83,7 @@ object HiCardScanner {
         if (cameraExecutor.isShutdown) {
             cameraExecutor = Executors.newSingleThreadExecutor()
         }
-        handle = hiocr.createNativeAnalyzer(0, "9597cbfa0d43a47b3e48842bb1025b409bf8ab3919a89d44acaab17b08bebd14|1737361504")
+        handle = hiocr.createNativeAnalyzer(0, licenseKey)
         if (handle == 0L) {
             Log.e("ModularX", "Failed to create native analyzer.")
             throw IllegalStateException("Native analyzer handle is invalid.")
