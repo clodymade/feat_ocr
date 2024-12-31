@@ -55,7 +55,7 @@ feat_ble = "1.0.1"
 feat_nfc = "1.0.0"
 feat_qr = "1.0.0"
 feat_ocr = "1.0.0"
-feat_feat_ocr = "1.0.0"
+feat_ocr_engine = "1.0.2"
 feat_fcm = "1.0.0"
 feat_network = "1.0.0"
 
@@ -128,7 +128,7 @@ feat_ble = { module = "com.github.clodymade:feat_ble", version.ref = "feat_ble" 
 feat_nfc = { module = "com.github.clodymade:feat_nfc", version.ref = "feat_nfc" }
 feat_qr = { module = "com.github.clodymade:feat_qr", version.ref = "feat_qr" }
 feat_ocr = { module = "com.github.clodymade:feat_ocr", version.ref = "feat_ocr" }
-feat_feat_ocr = { module = "com.github.clodymade:feat_ocr", version.ref = "feat_feat_ocr" }
+feat_ocr_engine = { module = "com.github.clodymade:feat_ocr_engine", version.ref = "feat_ocr_engine" }
 feat_fcm = { module = "com.github.clodymade:feat_fcm", version.ref = "feat_fcm" }
 feat_network = { module = "com.github.clodymade:feat_network", version.ref = "feat_network" }
 
