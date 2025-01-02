@@ -223,7 +223,8 @@ object HiCardScanner {
             // Optionally preprocess every third image for better OCR accuracy
             var preprocessedImage = croppedImage
             if (count % 3u == 0u) {
-                preprocessedImage = HiImageProcessor.processCardImageForEmbossedText(croppedImage)
+                //preprocessedImage = HiImageProcessor.processCardImageForEmbossedText(croppedImage)
+                preprocessedImage = HiImageProcessor.processCardImage(croppedImage)
                 //preProcessedState.value = preprocessedImage // Update the debug state
             }
 

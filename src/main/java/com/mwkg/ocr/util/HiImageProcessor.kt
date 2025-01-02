@@ -66,7 +66,7 @@ object HiImageProcessor {
             processedBitmap
         } catch (e: Exception) {
             Log.e("Modularx", "Image processing failed: ${e.message}")
-            bitmap // 원본 이미지를 반환
+            bitmap
         } finally {
             // Release Mat resources
             originalMat.release()
