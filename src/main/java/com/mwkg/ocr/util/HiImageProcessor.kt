@@ -2,7 +2,6 @@ package com.mwkg.ocr.util
 
 import android.graphics.Bitmap
 import android.util.Log
-import org.opencv.android.OpenCVLoader
 import org.opencv.android.Utils
 import org.opencv.core.*
 import org.opencv.imgproc.Imgproc
@@ -10,72 +9,79 @@ import org.opencv.imgproc.Imgproc
 object HiImageProcessor {
 
     init {
-        // Initialize OpenCV
-        if (!OpenCVLoader.initDebug()) {
-            Log.e("HiImageProcessor", "OpenCV initialization failed")
-        } else {
+        // OpenCV 네이티브 라이브러리 초기화
+        try {
+            System.loadLibrary("opencv_java4")
             Log.d("HiImageProcessor", "OpenCV initialized successfully")
+        } catch (e: UnsatisfiedLinkError) {
+            Log.e("HiImageProcessor", "OpenCV initialization failed: ${e.message}")
+            throw IllegalStateException("OpenCV library could not be loaded.")
         }
     }
 
-    // Process Card Image
     fun processCardImage(bitmap: Bitmap): Bitmap {
-        // Convert Bitmap to Mat
         val originalMat = Mat()
-        Utils.bitmapToMat(bitmap, originalMat)
-
-        // Convert to grayscale
         val grayMat = Mat()
-        Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_BGR2GRAY)
-
-        // Apply Gaussian blur
         val blurredMat = Mat()
-        Imgproc.GaussianBlur(grayMat, blurredMat, Size(21.0, 21.0), 0.0)
-
-        // Subtract blurred image from grayscale
         val diffMat = Mat()
-        Core.subtract(grayMat, blurredMat, diffMat)
-
-        // Apply CLAHE
-        val clahe = Imgproc.createCLAHE(2.0, Size(8.0, 8.0))
         val claheMat = Mat()
-        clahe.apply(diffMat, claheMat)
-
-        // Edge detection with Canny
         val edgeMat = Mat()
-        Imgproc.Canny(claheMat, edgeMat, 50.0, 150.0)
-
-        // Morphological close operation
         val morphMat = Mat()
-        val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
-        Imgproc.morphologyEx(edgeMat, morphMat, Imgproc.MORPH_CLOSE, kernel)
-
-        // Adaptive thresholding
         val thresholdMat = Mat()
-        Imgproc.adaptiveThreshold(
-            morphMat, thresholdMat, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C,
-            Imgproc.THRESH_BINARY, 15, -2.0
-        )
 
-        // Convert Mat back to Bitmap
-        val processedBitmap = Bitmap.createBitmap(thresholdMat.cols(), thresholdMat.rows(), Bitmap.Config.ARGB_8888)
-        Utils.matToBitmap(thresholdMat, processedBitmap)
+        return try {
+            // Convert Bitmap to Mat
+            Utils.bitmapToMat(bitmap, originalMat)
 
-        // Release Mat resources
-        originalMat.release()
-        grayMat.release()
-        blurredMat.release()
-        diffMat.release()
-        claheMat.release()
-        edgeMat.release()
-        morphMat.release()
-        thresholdMat.release()
+            // Convert to grayscale
+            Imgproc.cvtColor(originalMat, grayMat, Imgproc.COLOR_BGR2GRAY)
 
-        return processedBitmap
+            // Apply Gaussian blur
+            Imgproc.GaussianBlur(grayMat, blurredMat, Size(21.0, 21.0), 0.0)
+
+            // Subtract blurred image from grayscale
+            Core.subtract(grayMat, blurredMat, diffMat)
+
+            // Apply CLAHE
+            val clahe = Imgproc.createCLAHE(2.0, Size(8.0, 8.0))
+            clahe.apply(diffMat, claheMat)
+
+            // Edge detection with Canny
+            Imgproc.Canny(claheMat, edgeMat, 50.0, 150.0)
+
+            // Morphological close operation
+            val kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, Size(3.0, 3.0))
+            Imgproc.morphologyEx(edgeMat, morphMat, Imgproc.MORPH_CLOSE, kernel)
+
+            // Adaptive thresholding
+            Imgproc.adaptiveThreshold(
+                morphMat, thresholdMat, 255.0, Imgproc.ADAPTIVE_THRESH_MEAN_C,
+                Imgproc.THRESH_BINARY, 15, -2.0
+            )
+
+            // Convert Mat back to Bitmap
+            val processedBitmap = Bitmap.createBitmap(thresholdMat.cols(), thresholdMat.rows(), Bitmap.Config.ARGB_8888)
+            Utils.matToBitmap(thresholdMat, processedBitmap)
+
+            processedBitmap
+        } catch (e: Exception) {
+            Log.e("Modularx", "Image processing failed: ${e.message}")
+            bitmap // 원본 이미지를 반환
+        } finally {
+            // Release Mat resources
+            originalMat.release()
+            grayMat.release()
+            blurredMat.release()
+            diffMat.release()
+            claheMat.release()
+            edgeMat.release()
+            morphMat.release()
+            thresholdMat.release()
+        }
     }
 
-    // Process Card Image for Embossed Text
     fun processCardImageForEmbossedText(bitmap: Bitmap): Bitmap {
+
         // Convert Bitmap to Mat
         val originalMat = Mat()
         Utils.bitmapToMat(bitmap, originalMat)
@@ -111,7 +117,11 @@ object HiImageProcessor {
             counts[labels[i, 0][0].toInt()]++
         }
         val dominantColorIndex = counts.indices.maxByOrNull { counts[it] } ?: 0
-        val backgroundColor = centers.get(dominantColorIndex, 0)
+        val dominantRow = centers.row(dominantColorIndex)
+        val backgroundColor = DoubleArray(dominantRow.cols())
+        for (col in 0 until dominantRow.cols()) {
+            backgroundColor[col] = dominantRow.get(0, col)[0] // Read each value
+        }
 
         // Convert background color to Scalar
         val backgroundScalar = Scalar(backgroundColor[0], backgroundColor[1], backgroundColor[2])

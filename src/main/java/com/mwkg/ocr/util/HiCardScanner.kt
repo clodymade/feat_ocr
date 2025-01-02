@@ -211,8 +211,7 @@ object HiCardScanner {
             val rotatedBitmap =
                 rotateBitmap(rgbBitmap, imageProxy.imageInfo.rotationDegrees)
             // Crop the bitmap to the specified ROI (Region of Interest)
-            val croppedImage =
-                cropToCameraCoordinates(rotatedBitmap, scanBox, screenSize)
+            val croppedImage = cropToCameraCoordinates(rotatedBitmap, scanBox, screenSize)
             // Resize the cropped image for consistent processing
             val resizedImage = resizeImageToHeight(croppedImage, 1000.0f)
             // Store the latest scanned image for reference
@@ -383,7 +382,7 @@ object HiCardScanner {
      * @param screenSize The size of the screen to calculate scaling.
      * @return A cropped Bitmap.
      */
-    fun cropToCameraCoordinates(
+    private fun cropToCameraCoordinates(
         bitmap: Bitmap,
         scanBox: androidx.compose.ui.geometry.Rect,
         screenSize: androidx.compose.ui.geometry.Size
@@ -398,7 +397,7 @@ object HiCardScanner {
         val cropHeight = scanBox.height * minScale
         val cropWidth = cropHeight * 1.586 // Aspect ratio
         val cropOriginX = (cameraWidth - cropWidth) / 2
-        val cropOriginY = (cameraHeight - (scanBox.top + scanBox.height) * minScale)
+        val cropOriginY = ((cameraHeight / 2.0) - ((scanBox.bottom - scanBox.top) / 2.0) * minScale)
 
         return Bitmap.createBitmap(
             bitmap,
@@ -416,7 +415,7 @@ object HiCardScanner {
      * @param rotationDegrees The degree of rotation (e.g., 90, 180, 270).
      * @return A rotated Bitmap.
      */
-    fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
+    private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Int): Bitmap {
         val matrix = Matrix().apply {
             postRotate(rotationDegrees.toFloat())
         }
@@ -430,7 +429,7 @@ object HiCardScanner {
      * @param targetHeight The desired height of the resized Bitmap.
      * @return A resized Bitmap.
      */
-    fun resizeImageToHeight(bitmap: Bitmap, targetHeight: Float): Bitmap {
+    private fun resizeImageToHeight(bitmap: Bitmap, targetHeight: Float): Bitmap {
         val scale = targetHeight / bitmap.height
         val targetWidth = bitmap.width * scale
 
