@@ -8,7 +8,7 @@
     <application>
         <!-- Declares the activity for the OCR scanner -->
         <activity
-            android:name=".view.HiCardNumberListActivity"
+            android:name="com.mwkg.ocr.view.HiCardNumberListActivity"
             android:exported="true"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         </activity>

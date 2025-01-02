@@ -28,6 +28,7 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.util.Log
 import android.util.Size
+import android.view.Surface
 import androidx.annotation.OptIn
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -127,16 +128,17 @@ object HiCardScanner {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
+            val rotation = previewView.display?.rotation ?: Surface.ROTATION_0
 
             val preview = Preview.Builder()
-                .setTargetRotation(previewView.display.rotation)
+                .setTargetRotation(rotation)
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 .build().also {
                     it.surfaceProvider = previewView.surfaceProvider
                 }
 
             val imageAnalyzer = ImageAnalysis.Builder()
-                .setTargetRotation(previewView.display.rotation)
+                .setTargetRotation(rotation)
                 .setTargetAspectRatio(AspectRatio.RATIO_16_9)
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build().also {
