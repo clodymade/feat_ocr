@@ -18,16 +18,20 @@
 
 package com.mwkg.ocr.view
 
+import android.Manifest
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.mutableStateOf
 import com.mwkg.ocr.model.HiCardNumber
 import com.mwkg.ocr.util.HiCardScanner
+import com.mwkg.ocr.util.HiOcrPermissionType
+import com.mwkg.ocr.util.HiOcrToolkit.hasPermissions
 import com.mwkg.ocr.util.HiOcrToolkit.toPrettyJsonString
 import com.mwkg.ocr.viewmodel.HiCardNumberListViewModel
 
@@ -48,12 +52,54 @@ class HiCardNumberListActivity : ComponentActivity() {
     // State to manage the preprocessed bitmap for debugging or additional processing
     private val preProcessedState = mutableStateOf<Bitmap?>(null)
 
+    private lateinit var previewView: PreviewView
+
+    private val requestPermissionsLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+            permissions.entries.forEach { (permission, isGranted) ->
+                Log.d("PermissionResult", "$permission: $isGranted")
+            }
+
+            val isCameraGranted = permissions[Manifest.permission.CAMERA] ?: false
+            if (isCameraGranted) {
+                startCardScanner()
+            } else {
+                HiCardScanner.stop()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize the CameraX preview view
-        val previewView = PreviewView(this)
+        HiCardScanner.licenseKey = "5172842b555966c14149f47505756c48c5f5394178f18b0cffb3dbd11e69898b|1750331753"
 
+        // Initialize the CameraX preview view
+        previewView = PreviewView(this)
+
+        val reqPermissions = HiOcrPermissionType.CAMERA.requiredPermissions()
+        if (!hasPermissions(reqPermissions)) {
+            requestPermissionsLauncher.launch(reqPermissions)
+        }
+        else {
+            startCardScanner()
+        }
+
+        // Set up the content view with the Compose UI
+        setContent {
+            HiCardNumberListActivityScreen(
+                cardNumbers = viewModel.numbers, // Pass the scanned card numbers to the UI
+                previewView = previewView, // CameraX preview view
+                onBackPressed = { finish() }, // Handle the back press
+                onToggleTorch = { isOn -> HiCardScanner.toggleTorch(isOn) }, // Toggle the flashlight
+                isPreviewVisible = isPreviewVisible, // Pass the preview visibility state
+                roiState = roiState, // Pass the ROI state
+                preProcessedState = preProcessedState, // Pass the preprocessed bitmap state
+                onCardScanned = { cardNumber -> viewModel.update(cardNumber) } // Update the ViewModel with new scanned data
+            )
+        }
+    }
+
+    private fun startCardScanner() {
         // Start the card scanner
         HiCardScanner.start(
             activity = this,
@@ -85,20 +131,6 @@ class HiCardNumberListActivity : ComponentActivity() {
                 HiCardScanner.stop()
                 isPreviewVisible.value = false
             }
-        }
-
-        // Set up the content view with the Compose UI
-        setContent {
-            HiCardNumberListActivityScreen(
-                cardNumbers = viewModel.numbers, // Pass the scanned card numbers to the UI
-                previewView = previewView, // CameraX preview view
-                onBackPressed = { finish() }, // Handle the back press
-                onToggleTorch = { isOn -> HiCardScanner.toggleTorch(isOn) }, // Toggle the flashlight
-                isPreviewVisible = isPreviewVisible, // Pass the preview visibility state
-                roiState = roiState, // Pass the ROI state
-                preProcessedState = preProcessedState, // Pass the preprocessed bitmap state
-                onCardScanned = { cardNumber -> viewModel.update(cardNumber) } // Update the ViewModel with new scanned data
-            )
         }
     }
 
