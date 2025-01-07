@@ -54,35 +54,11 @@ class HiCardNumberListActivity : ComponentActivity() {
 
     private lateinit var previewView: PreviewView
 
-    private val requestPermissionsLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
-            permissions.entries.forEach { (permission, isGranted) ->
-                Log.d("PermissionResult", "$permission: $isGranted")
-            }
-
-            val isCameraGranted = permissions[Manifest.permission.CAMERA] ?: false
-            if (isCameraGranted) {
-                startCardScanner()
-            } else {
-                HiCardScanner.stop()
-            }
-        }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        HiCardScanner.licenseKey = "5172842b555966c14149f47505756c48c5f5394178f18b0cffb3dbd11e69898b|1750331753"
-
         // Initialize the CameraX preview view
         previewView = PreviewView(this)
-
-        val reqPermissions = HiOcrPermissionType.CAMERA.requiredPermissions()
-        if (!hasPermissions(reqPermissions)) {
-            requestPermissionsLauncher.launch(reqPermissions)
-        }
-        else {
-            startCardScanner()
-        }
 
         // Set up the content view with the Compose UI
         setContent {
@@ -97,6 +73,8 @@ class HiCardNumberListActivity : ComponentActivity() {
                 onCardScanned = { cardNumber -> viewModel.update(cardNumber) } // Update the ViewModel with new scanned data
             )
         }
+
+        startCardScanner()
     }
 
     private fun startCardScanner() {

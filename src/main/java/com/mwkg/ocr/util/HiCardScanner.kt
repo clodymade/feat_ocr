@@ -29,12 +29,16 @@ import android.hardware.camera2.CameraManager
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.OptIn
+import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import androidx.window.layout.WindowMetricsCalculator
@@ -116,16 +120,46 @@ object HiCardScanner {
         initialize()
 
         val reqPermissions = HiOcrPermissionType.CAMERA.requiredPermissions()
+
+        // Check if the permissions are granted
         if (!activity.hasPermissions(reqPermissions)) {
-            activity.requestPermissions(reqPermissions, HiOcrPermissionReqCodes.OCR)
+            if (activity is AppCompatActivity) {
+                ActivityCompat.requestPermissions(activity, reqPermissions, HiOcrPermissionReqCodes.OCR)
+            } else if (activity is ComponentActivity) {
+                val launcher = activity.registerForActivityResult(
+                    ActivityResultContracts.RequestMultiplePermissions()
+                ) { permissions ->
+                    val allGranted = permissions.all { it.value }
+                    if (allGranted) {
+                        startScanner(previewView, roiState, preProcessedState)
+                    } else {
+                        Log.e("ModularX::HiCardScanner", "Permissions not granted.")
+                    }
+                }
+                launcher.launch(reqPermissions)
+            } else {
+                throw IllegalArgumentException("Unsupported activity type")
+            }
             return
         }
 
+        // Start scanning if permissions are already granted
+        startScanner(previewView, roiState, preProcessedState)
+    }
+
+    /**
+     * Handles the core logic to start the scanner once permissions are granted.
+     */
+    private fun startScanner(
+        previewView: PreviewView,
+        roiState: MutableState<androidx.compose.ui.geometry.Rect>,
+        preProcessedState: MutableState<Bitmap?>
+    ) {
         isScanning = true
         HiCardScanner.preProcessedState = preProcessedState
         screenSize = getScreenSizeInPx()
 
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(activity!!)
         cameraProviderFuture.addListener({
             val cameraProvider = cameraProviderFuture.get()
             val rotation = previewView.display?.rotation ?: Surface.ROTATION_0
@@ -160,7 +194,7 @@ object HiCardScanner {
                 Log.e("ModularX::HiCardScanner", "Camera binding failed: ${exc.message}")
             }
 
-        }, ContextCompat.getMainExecutor(activity))
+        }, ContextCompat.getMainExecutor(activity!!))
     }
 
     /**
