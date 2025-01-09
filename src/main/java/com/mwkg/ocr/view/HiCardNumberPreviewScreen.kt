@@ -17,6 +17,7 @@
 package com.mwkg.ocr.view
 
 import android.graphics.Bitmap
+import android.graphics.Rect
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -53,7 +54,7 @@ fun HiCardNumberPreviewScreen(
     onToggleTorch: (Boolean) -> Unit,
     onClosePreview: () -> Unit,
     previewView: PreviewView,
-    roiState: MutableState<androidx.compose.ui.geometry.Rect>,
+    roiState: MutableState<Rect>,
     preProcessedState: State<Bitmap?>
 ) {
     // Remember flashlight toggle state
@@ -100,7 +101,8 @@ fun HiCardNumberPreviewScreen(
                     painter = painterResource(
                         id = if (isTorchOn) R.drawable.ic_flashlight_on else R.drawable.ic_flashlight_off
                     ),
-                    contentDescription = if (isTorchOn) "Flashlight On" else "Flashlight Off"
+                    contentDescription = if (isTorchOn) "Flashlight On" else "Flashlight Off",
+                    tint = Color.Unspecified // Retain original icon color
                 )
             }
 
@@ -110,7 +112,8 @@ fun HiCardNumberPreviewScreen(
             IconButton(onClick = onClosePreview) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_close),
-                    contentDescription = "Close Preview"
+                    contentDescription = "Close Preview",
+                    tint = Color.Unspecified // Retain original icon color
                 )
             }
         }
@@ -122,27 +125,22 @@ fun HiCardNumberPreviewScreen(
  *
  * @return The rectangle defining the ROI.
  */
-fun DrawScope.drawCardRoiOverlay(): androidx.compose.ui.geometry.Rect {
+fun DrawScope.drawCardRoiOverlay(): Rect {
     // Overlay color with dimming effect
     val overlayColor = Color.Black.copy(alpha = 0.6f)
     drawRect(color = overlayColor)
 
     // Calculate ROI dimensions
     val roiMargin = 10.dp.toPx()
-    val roiWidth = (size.width - (roiMargin * 2.0)).toFloat()
-    val roiHeight = (roiWidth / 1.586).toFloat()
+    val roiWidth = size.width.toFloat() - (roiMargin * 2.0f)
+    val roiHeight = roiWidth / 1.586f
     val roiLeft = roiMargin
-    val roiTop = ((size.height - roiHeight) / 2.0).toFloat()
+    val roiTop = (size.height.toFloat() - roiHeight) / 2.0f
     val roiRight = roiLeft + roiWidth
     val roiBottom = roiTop + roiHeight
 
     // Define the ROI rectangle
-    val roiRect = androidx.compose.ui.geometry.Rect(
-        roiLeft,
-        roiTop,
-        roiRight,
-        roiBottom
-    )
+    val roiRect = Rect(roiLeft.toInt(), roiTop.toInt(), roiRight.toInt(), roiBottom.toInt())
 
     // Clear the ROI area
     drawRect(
@@ -152,66 +150,26 @@ fun DrawScope.drawCardRoiOverlay(): androidx.compose.ui.geometry.Rect {
         blendMode = BlendMode.Clear
     )
 
-    // Draw corner lines for the ROI
+    // Draw corner lines around the ROI
     val cornerLength = 30.dp.toPx()
     val cornerStroke = 4.dp.toPx()
     val cornerColor = Color.Red
 
     // Top-left corner
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiLeft, roiTop),
-        end = Offset(roiLeft + cornerLength, roiTop),
-        strokeWidth = cornerStroke
-    )
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiLeft, roiTop),
-        end = Offset(roiLeft, roiTop + cornerLength),
-        strokeWidth = cornerStroke
-    )
+    drawLine(color = cornerColor, start = Offset(roiLeft, roiTop), end = Offset(roiLeft + cornerLength, roiTop), strokeWidth = cornerStroke)
+    drawLine(color = cornerColor, start = Offset(roiLeft, roiTop), end = Offset(roiLeft, roiTop + cornerLength), strokeWidth = cornerStroke)
 
     // Top-right corner
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiRight, roiTop),
-        end = Offset(roiRight - cornerLength, roiTop),
-        strokeWidth = cornerStroke
-    )
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiRight, roiTop),
-        end = Offset(roiRight, roiTop + cornerLength),
-        strokeWidth = cornerStroke
-    )
+    drawLine(color = cornerColor, start = Offset(roiRight, roiTop), end = Offset(roiRight - cornerLength, roiTop), strokeWidth = cornerStroke)
+    drawLine(color = cornerColor, start = Offset(roiRight, roiTop), end = Offset(roiRight, roiTop + cornerLength), strokeWidth = cornerStroke)
 
     // Bottom-left corner
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiLeft, roiBottom),
-        end = Offset(roiLeft + cornerLength, roiBottom),
-        strokeWidth = cornerStroke
-    )
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiLeft, roiBottom),
-        end = Offset(roiLeft, roiBottom - cornerLength),
-        strokeWidth = cornerStroke
-    )
+    drawLine(color = cornerColor, start = Offset(roiLeft, roiBottom), end = Offset(roiLeft + cornerLength, roiBottom), strokeWidth = cornerStroke)
+    drawLine(color = cornerColor, start = Offset(roiLeft, roiBottom), end = Offset(roiLeft, roiBottom - cornerLength), strokeWidth = cornerStroke)
 
     // Bottom-right corner
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiRight, roiBottom),
-        end = Offset(roiRight - cornerLength, roiBottom),
-        strokeWidth = cornerStroke
-    )
-    drawLine(
-        color = cornerColor,
-        start = Offset(roiRight, roiBottom),
-        end = Offset(roiRight, roiBottom - cornerLength),
-        strokeWidth = cornerStroke
-    )
+    drawLine(color = cornerColor, start = Offset(roiRight, roiBottom), end = Offset(roiRight - cornerLength, roiBottom), strokeWidth = cornerStroke)
+    drawLine(color = cornerColor, start = Offset(roiRight, roiBottom), end = Offset(roiRight, roiBottom - cornerLength), strokeWidth = cornerStroke)
 
     return roiRect
 }

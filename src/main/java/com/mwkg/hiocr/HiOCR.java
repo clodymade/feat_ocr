@@ -2,7 +2,7 @@ package com.mwkg.hiocr;
 
 public class HiOCR {
     static {
-        System.loadLibrary("HiOCR");
+        System.loadLibrary("native-lib");
     }
 
     public native void destroyNativeAnalyzer(long handle);

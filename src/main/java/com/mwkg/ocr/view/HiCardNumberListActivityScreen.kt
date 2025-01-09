@@ -18,6 +18,7 @@
 package com.mwkg.ocr.view
 
 import android.graphics.Bitmap
+import android.graphics.Rect
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.*
 import kotlinx.coroutines.flow.StateFlow
@@ -43,7 +44,7 @@ fun HiCardNumberListActivityScreen(
     onBackPressed: () -> Unit, // Action for back button press
     onToggleTorch: (Boolean) -> Unit, // Action to toggle flashlight
     isPreviewVisible: MutableState<Boolean>, // State for preview visibility
-    roiState: MutableState<androidx.compose.ui.geometry.Rect>, // ROI state
+    roiState: MutableState<Rect>, // ROI state
     preProcessedState: MutableState<Bitmap?>, // State for debugging processed images
     onCardScanned: (HiCardNumber) -> Unit // Action when a card is scanned
 ) {

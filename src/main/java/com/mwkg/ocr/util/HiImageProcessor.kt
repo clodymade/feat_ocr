@@ -65,7 +65,7 @@ object HiImageProcessor {
 
             processedBitmap
         } catch (e: Exception) {
-            Log.e("Modularx", "Image processing failed: ${e.message}")
+            Log.e("Modularx::HiImageProcessor", "Image processing failed: ${e.message}")
             bitmap
         } finally {
             // Release Mat resources

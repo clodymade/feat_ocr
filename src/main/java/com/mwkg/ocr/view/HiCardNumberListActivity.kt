@@ -19,7 +19,9 @@
 package com.mwkg.ocr.view
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -30,6 +32,10 @@ import androidx.camera.view.PreviewView
 import androidx.compose.runtime.mutableStateOf
 import com.mwkg.ocr.model.HiCardNumber
 import com.mwkg.ocr.util.HiCardScanner
+import com.mwkg.ocr.util.HiCardScanner.handle
+import com.mwkg.ocr.util.HiCardScanner.hiocr
+import com.mwkg.ocr.util.HiOcrPermission
+import com.mwkg.ocr.util.HiOcrPermissionReqCodes
 import com.mwkg.ocr.util.HiOcrPermissionType
 import com.mwkg.ocr.util.HiOcrToolkit.hasPermissions
 import com.mwkg.ocr.util.HiOcrToolkit.toPrettyJsonString
@@ -47,7 +53,7 @@ class HiCardNumberListActivity : ComponentActivity() {
     private var isPreviewVisible = mutableStateOf(true)
 
     // State to manage the Region of Interest (ROI) for card scanning
-    private val roiState = mutableStateOf(androidx.compose.ui.geometry.Rect(0F, 0F, 0F, 0F))
+    private val roiState = mutableStateOf(Rect(0, 0, 0, 0))
 
     // State to manage the preprocessed bitmap for debugging or additional processing
     private val preProcessedState = mutableStateOf<Bitmap?>(null)
@@ -88,18 +94,20 @@ class HiCardNumberListActivity : ComponentActivity() {
             // Log the scanned result in JSON format
             Log.d("ModularX", result.toPrettyJsonString())
 
-            // Extract card details from the result
-            val cardNumber = result.cardNumber
-            val holderName = result.holderName
-            val expiryDate = result.expiryDate
-            val issuingNetwork = result.issuingNetwork
+            // Extract relevant card information from the result map
+            val cardNumber = result.cardNumber.let { hiocr.decryptionDataNative(handle, it) } ?: ""
+            val holderName = result.holderName.let { hiocr.decryptionDataNative(handle, it) } ?: ""
+            val expiryMonth = result.expiryMonth.let { hiocr.decryptionDataNative(handle, it) } ?: ""
+            val expiryYear = result.expiryYear.let { hiocr.decryptionDataNative(handle, it) } ?: ""
+            val issuingNetwork = result.issuingNetwork.let { hiocr.decryptionDataNative(handle, it) } ?: ""
 
-            // If the card number and expiry date are valid, update the ViewModel
-            if (cardNumber.isNotEmpty() && expiryDate.isNotEmpty()) {
+            // If the card number is valid, update the ViewModel
+            if (cardNumber.isNotEmpty()) {
                 val code = HiCardNumber(
                     cardNumber = cardNumber,
                     holderName = holderName,
-                    expiryDate = expiryDate,
+                    expiryMonth = expiryMonth,
+                    expiryYear = expiryYear,
                     issuingNetwork = issuingNetwork,
                     scannedAt = System.currentTimeMillis() // Current timestamp
                 )

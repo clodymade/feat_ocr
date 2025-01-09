@@ -52,7 +52,7 @@ fun HiCardNumberItem(cardNumber: HiCardNumber) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = "Card Number: ${cardNumber.cardNumber}") // Displays the card number
             Text(text = "Holder Name: ${cardNumber.holderName}") // Displays the holder's name
-            Text(text = "Expiry Date: ${cardNumber.expiryDate}") // Displays the card's expiry date
+            Text(text = "Expiry Date: ${cardNumber.expiryMonth}/${cardNumber.expiryYear}") // Displays the card's expiry date
             Text(text = "Issuing Network: ${cardNumber.issuingNetwork}") // Displays the card's issuing network
             Text(text = "Scanned At: $scannedDate") // Displays the scanned timestamp in a readable format
         }
